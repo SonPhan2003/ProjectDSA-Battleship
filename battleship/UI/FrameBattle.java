@@ -149,9 +149,9 @@ public class FrameBattle implements ActionListener, KeyListener {
                 numNaviCPU--;
                 setAffondato(naveAffondata);
                 if (numNaviCPU == 0) {
-                    Object[] options = { "Nuova Partita", "Esci" };
-                    int n = JOptionPane.showOptionDialog(frame, (new JLabel("Hai Vinto!", JLabel.CENTER)),
-                            "Partita Terminata", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options,
+                    Object[] options = { "New Game", "Quit" };
+                    int n = JOptionPane.showOptionDialog(frame, (new JLabel("Victory!", JLabel.CENTER)),
+                            "Game Over", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options,
                             options[1]);
                     if (n == 0) {
                         FrameManageship restart = new FrameManageship();
@@ -319,9 +319,9 @@ public class FrameBattle implements ActionListener, KeyListener {
                 numNaviPlayer--;
                 setAffondato(report.getP());
                 if (numNaviPlayer == 0) {
-                    Object[] options = { "Nuova Partita", "Esci" };
-                    int n = JOptionPane.showOptionDialog(frame, (new JLabel("Hai Perso!", JLabel.CENTER)),
-                            "Partita Terminata", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options,
+                    Object[] options = { "New Game", "Quit" };
+                    int n = JOptionPane.showOptionDialog(frame, (new JLabel("You Lose!", JLabel.CENTER)),
+                            "Game over", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options,
                             options[1]);
                     if (n == 0) {
                         FrameManageship restart = new FrameManageship();
