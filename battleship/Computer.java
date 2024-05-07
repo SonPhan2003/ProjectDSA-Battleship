@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.Random;
 
 public class Computer {
-    private LinkedList<Position> list;
+    private LinkedList<Position> ListofPosition;
     private Random r;
     private int hits;
     private LinkedList<String> possibility;
@@ -17,12 +17,12 @@ public class Computer {
 
 
     public Computer(Map EnemyMap) {
-        list = new LinkedList<Position>();
+        ListofPosition = new LinkedList<Position>();
         this.plMap = EnemyMap;
         for (int i = 0; i < Map.DIM_map; i++) {
             for (int j = 0; j < Map.DIM_map; j++) {
                 Position p = new Position(i, j);
-                list.add(p);
+                ListofPosition.add(p);
             }
         }
         r = new Random();
@@ -95,14 +95,14 @@ public class Computer {
     }
 
     private boolean ShootRandom() {
-        int shoot = r.nextInt(list.size());
-        Position p = list.remove(shoot);
+        int shoot = r.nextInt(ListofPosition.size());
+        Position p = ListofPosition.remove(shoot);
         LastHit = p;
         boolean hit = plMap.Hit(p);
         return hit;
     }
 
-    private boolean shootTarget1() {
+    private boolean shootTarget1() { // if the shoot is correct, shoot random dir of the possibility list
         boolean error = true;
         Position p = null;
         do {
@@ -112,7 +112,7 @@ public class Computer {
             p.move(dir.charAt(0));
             direction = dir;
             if (!plMap.WATER(p)) {
-                list.remove(p);
+                ListofPosition.remove(p);
                 error = false;
             }
         } while (error);// make sure to not hit
@@ -136,7 +136,7 @@ public class Computer {
 
             }
         } while (!hit);
-        list.remove(p);
+        ListofPosition.remove(p);
         LastHit = p;
         return plMap.Hit(p);
     }
@@ -151,7 +151,7 @@ public class Computer {
             if (Ystart != 0) {
                 Position p = new Position(Xstart, Ystart - 1);
                 if (!plMap.WATER(p)) {
-                    list.remove(p);
+                    ListofPosition.remove(p);
                     plMap.setWATER(p);
 
                 }
@@ -159,7 +159,7 @@ public class Computer {
             if (Yend != Map.DIM_map - 1) {
                 Position p = new Position(Xstart, Yend + 1);
                 if (!plMap.WATER(p)) {
-                    list.remove(p);
+                    ListofPosition.remove(p);
                     plMap.setWATER(p);
                 }
             }
@@ -167,7 +167,7 @@ public class Computer {
                 for (int i = 0; i <= Yend - Ystart; i++) {
                     Position p = new Position(Xstart - 1, Ystart + i);
                     if (!plMap.WATER(p)) {
-                        list.remove(p);
+                        ListofPosition.remove(p);
                         plMap.setWATER(p);
                     }
                 }
@@ -177,7 +177,7 @@ public class Computer {
                 for (int i = 0; i <= Yend - Ystart; i++) {
                     Position p = new Position(Xstart + 1, Ystart + i);
                     if (!plMap.WATER(p)) {
-                        list.remove(p);
+                        ListofPosition.remove(p);
                         plMap.setWATER(p);
                     }
                 }
@@ -186,14 +186,14 @@ public class Computer {
             if (Xstart != 0) {
                 Position p = new Position(Xstart - 1, Ystart);
                 if (!plMap.WATER(p)) {
-                    list.remove(p);
+                    ListofPosition.remove(p);
                     plMap.setWATER(p);
                 }
             }
             if (XEnd != Map.DIM_map - 1) {
                 Position p = new Position(XEnd + 1, Ystart);
                 if (!plMap.WATER(p)) {
-                    list.remove(p);
+                    ListofPosition.remove(p);
                     plMap.setWATER(p);
                 }
             }
@@ -201,7 +201,7 @@ public class Computer {
                 for (int i = 0; i <= XEnd - Xstart; i++) {
                     Position p = new Position(Xstart + i, Ystart - 1);
                     if (!plMap.WATER(p)) {
-                        list.remove(p);
+                        ListofPosition.remove(p);
                         plMap.setWATER(p);
                     }
                 }
@@ -211,7 +211,7 @@ public class Computer {
                 for (int i = 0; i <= XEnd - Xstart; i++) {
                     Position p = new Position(Xstart + i, Ystart + 1);
                     if (!plMap.WATER(p)) {
-                        list.remove(p);
+                        ListofPosition.remove(p);
                         plMap.setWATER(p);
                     }
                 }

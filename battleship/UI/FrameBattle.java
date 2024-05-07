@@ -56,7 +56,7 @@ public class FrameBattle implements ActionListener, KeyListener {
         cpuMap = new Map();
         cpuMap.fillMapRandom();
         frame.setSize(1080, 700);
-        frame.setTitle("Burning Battle - Pirate Edition");
+        frame.setTitle("Burning Battle");
         frame.setFocusable(true);
         frame.requestFocusInWindow();
         frame.addKeyListener(this);

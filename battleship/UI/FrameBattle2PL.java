@@ -57,7 +57,7 @@ public class FrameBattle2PL implements ActionListener, KeyListener {
         // cpuMap.riempiMappaRandom();
         cpuMap.setAdvShips(advShips);
         frame.setSize(1080, 700);
-        frame.setTitle("Burning Battle - Pirate Edition");
+        frame.setTitle("Burning Battle");
         frame.setFocusable(true);
         frame.requestFocusInWindow();
         frame.addKeyListener(this);

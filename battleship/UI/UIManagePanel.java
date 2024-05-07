@@ -71,13 +71,13 @@ public class UIManagePanel extends UIJPanelBG {
         // Verticale/Orizzontale
         direction = new JRadioButton[2];
         ButtonGroup radioButtonDirection = new ButtonGroup();
-        direction[0] = new JRadioButton("Orizzontale");
+        direction[0] = new JRadioButton("Horizontal");
         direction[0].setBounds(0, 260, 105, 20);
         radioButtonDirection.add(direction[0]);
         direction[0].setSelected(true);
         direction[0].setOpaque(false);
         shipSelect.add(direction[0]);
-        direction[1] = new JRadioButton("Verticale");
+        direction[1] = new JRadioButton("Vertical");
         direction[1].setBounds(110, 260, 105, 20);
         direction[1].setOpaque(false);
         radioButtonDirection.add(direction[1]);
