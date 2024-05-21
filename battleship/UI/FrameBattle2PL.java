@@ -52,8 +52,8 @@ public class FrameBattle2PL implements ActionListener, KeyListener {
 
     public FrameBattle2PL(LinkedList<int[]> playerShips, LinkedList<int[]> advShips, Map map) {
         playerMap = map;
-        cpu = new Computer(map);
         cpuMap = new Map();
+        cpu = new Computer(map,cpuMap.GetShipList());
         // cpuMap.riempiMappaRandom();
         cpuMap.setAdvShips(advShips);
         frame.setSize(1080, 700);

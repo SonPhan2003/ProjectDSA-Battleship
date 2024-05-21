@@ -59,7 +59,7 @@ public class FrameManageship extends JFrame implements ActionListener, KeyListen
         }
         choosePan.random.addActionListener(this);
         choosePan.reset.addActionListener(this);
-        choosePan.gioca.addActionListener(this);
+        choosePan.gioca.addActionListener(this); // play
         playerShips = new LinkedList<int[]>();
     }
 
@@ -107,7 +107,7 @@ public class FrameManageship extends JFrame implements ActionListener, KeyListen
                     dim = 1;
                     break;
             }
-            if (choosePan.direction[0].isSelected())// 0=orizzontale 1=verticale
+            if (choosePan.direction[0].isSelected())// 0=horziontal 1=vertical
                 dir = 0;
             else
                 dir = 1;

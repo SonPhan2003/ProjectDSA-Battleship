@@ -4,12 +4,18 @@ public class Ship {
 
     private int xstart, ystart;
     private int xEnd, yEnd;
+    private int dimension;
 
-    public Ship(int xstart, int ystart, int xEnd, int yEnd) {
+    public Ship(int xstart, int ystart, int xEnd, int yEnd, int dimension) {
         this.xstart = xstart;
         this.ystart = ystart;
         this.xEnd = xEnd;
         this.yEnd = yEnd;
+        this.dimension = dimension;
+    }
+
+    public int getDimension(){
+        return dimension;
     }
 
     public int getXstart() {
@@ -35,6 +41,17 @@ public class Ship {
         return false;
 
     }
+    public boolean isSunk(Map map) {
+        for (int i = getXstart(); i <= getXEnd(); i++) {
+            for (int j = getYstart(); j <= getYEnd(); j++) {
+                if (map.getCellStatus(i, j) != map.getHitConstant()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
 
     public String toString() {
         return xstart + "-" + ystart + "  " + xEnd + "-" + yEnd;

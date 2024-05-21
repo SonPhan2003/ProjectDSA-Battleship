@@ -8,6 +8,11 @@ public class Map {
     private final char EMPTY = '0', SHIP = 'X', WATER = 'A', HIT = 'C';
     private char[][] map;
     private LinkedList<Ship> ShipList;
+    // make new 4 small grids from big map
+    private int grid1_x1, grid1_y1, grid1_x2, grid1_y2;
+    private int grid2_x1, grid2_y1, grid2_x2, grid2_y2;
+    private int grid3_x1, grid3_y1, grid3_x2, grid3_y2;
+    private int grid4_x1, grid4_y1, grid4_x2, grid4_y2;
 
     public Map() {
         ShipList = new LinkedList<Ship>();
@@ -15,6 +20,98 @@ public class Map {
         for (int i = 0; i < DIM_map; i++)
             for (int j = 0; j < DIM_map; j++)
                 map[i][j] = EMPTY;
+
+        // Divide the map into 4 grids
+        divideMapIntoGrids();
+    }
+
+    private void divideMapIntoGrids() {
+        // Calculate the grid coordinates
+        int halfWidth = DIM_map / 2;
+        int halfHeight = DIM_map / 2;
+
+        // Grid 1: A to E as row, 1 to 5 as column
+        grid1_x1 = 0;
+        grid1_y1 = 0;
+        grid1_x2 = halfWidth;
+        grid1_y2 = halfHeight;
+
+        // Grid 2: F to L, 1 to 5
+        grid2_x1 = 0;
+        grid2_y1 = halfHeight;
+        grid2_x2 = halfWidth;
+        grid2_y2 = DIM_map;
+
+        // Grid 3: A to E, 6 to 10
+        grid3_x1 = halfWidth;
+        grid3_y1 = 0;
+        grid3_x2 = DIM_map;
+        grid3_y2 = halfHeight;
+
+        // Grid 4: F to L, 6 to 10
+        grid4_x1 = halfWidth;
+        grid4_y1 = halfHeight;
+        grid4_x2 = DIM_map;
+        grid4_y2 = DIM_map;
+    }
+
+    public int getGrid1_x1() { return grid1_x1; }
+    public int getGrid1_y1() { return grid1_y1; }
+    public int getGrid1_x2() { return grid1_x2; }
+    public int getGrid1_y2() { return grid1_y2; }
+
+    public int getGrid2_x1() { return grid2_x1; }
+    public int getGrid2_y1() { return grid2_y1; }
+    public int getGrid2_x2() { return grid2_x2; }
+    public int getGrid2_y2() { return grid2_y2; }
+
+    public int getGrid3_x1() { return grid3_x1; }
+    public int getGrid3_y1() { return grid3_y1; }
+    public int getGrid3_x2() { return grid3_x2; }
+    public int getGrid3_y2() { return grid3_y2; }
+
+    public int getGrid4_x1() { return grid4_x1; }
+    public int getGrid4_y1() { return grid4_y1; }
+    public int getGrid4_x2() { return grid4_x2; }
+    public int getGrid4_y2() { return grid4_y2; }
+
+
+    public void markBlockedCellsAroundSunkShip(Ship ship) {
+        int startX = ship.getXstart();
+        int startY = ship.getYstart();
+        int endX = ship.getXEnd();
+        int endY = ship.getYEnd();
+
+        // Mark cells around the ship as WATER
+        for (int i = startX - 1; i <= endX + 1; i++) {
+            for (int j = startY - 1; j <= endY + 1; j++) {
+                if (i >= 0 && i < DIM_map && j >= 0 && j < DIM_map) {
+                    if (map[i][j] != HIT) {  // Skip cells that are already hit
+                        map[i][j] = WATER;
+                    }
+                }
+            }
+        }
+    }
+
+    private boolean[][] getBlockedCells() {
+        boolean[][] blockedCells = new boolean[Map.DIM_map][Map.DIM_map];
+
+        for (Ship ship : ShipList) {
+            if (ship.isSunk(this)) { // Pass the Map object (this) to isSunk method
+                markBlockedCellsAroundSunkShip(ship);
+            }
+        }
+
+        return blockedCells;
+    }
+
+    public char getCellStatus(int x, int y) {
+        return map[x][y];
+    }
+
+    public char getHitConstant() {
+        return HIT;
     }
 
     public void fillMapRandom() {
@@ -56,10 +153,10 @@ public class Map {
         if (!inserted)
             return false;
         if (dir == 0) {
-            Ship n = new Ship(x, y, x, y + dim - 1);
+            Ship n = new Ship(x, y, x, y + dim - 1, dim);
             ShipList.add(n);
         } else {
-            Ship n = new Ship(x, y, x + dim - 1, y);
+            Ship n = new Ship(x, y, x + dim - 1, y, dim);
             ShipList.add(n);
         }
         for (int i = 0; i < dim; i++) {
@@ -91,10 +188,10 @@ public class Map {
                 inserted = verifyVertical(row, column, dimension);
         } while (!inserted);
         if (direction == 0) {
-            Ship n = new Ship(row, column, row, column + dimension - 1);
+            Ship n = new Ship(row, column, row, column + dimension - 1, dimension);
             ShipList.add(n);
         } else {
-            Ship n = new Ship(row, column, row + dimension - 1, column);
+            Ship n = new Ship(row, column, row + dimension - 1, column, dimension);
             ShipList.add(n);
         }
         for (int i = 0; i < dimension; i++) {
@@ -217,5 +314,10 @@ public class Map {
                 System.out.print(map[i][j]);
             System.out.println("");
         }
+    }
+
+    public LinkedList<Ship> GetShipList()
+    {
+        return ShipList;
     }
 }

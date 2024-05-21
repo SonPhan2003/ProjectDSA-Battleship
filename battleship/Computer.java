@@ -14,9 +14,10 @@ public class Computer {
     private String direction;
     private Map plMap; //player Map
     private Position FirstHit;// First position
+    private LinkedList<EnemyShip> EnemyShips = new LinkedList<EnemyShip>(); // the remain kind of ship
 
 
-    public Computer(Map EnemyMap) {
+    public Computer(Map EnemyMap, LinkedList<Ship> Ships) {
         ListofPosition = new LinkedList<Position>();
         this.plMap = EnemyMap;
         for (int i = 0; i < Map.DIM_map; i++) {
@@ -27,25 +28,36 @@ public class Computer {
         }
         r = new Random();
         hits = 0;
+        for (int i = 0; i < Ships.size(); i++) { // get the ramin of ship size
+            EnemyShip enemy = new EnemyShip();
+            enemy.ship = new Ship(Ships.get(i).getXstart(),
+                                  Ships.get(i).getYstart(),
+                                  Ships.get(i).getXEnd(),
+                                  Ships.get(i).getYEnd(),
+                                  Ships.get(i).getDimension());
+            enemy.dimension = Ships.get(i).getDimension();
+            EnemyShips.add(enemy);
+        }
     }
 
     public Report myTurn() {
         Report rep = new Report();
         if (hits == 0) {
-            boolean hit = ShootRandom();
-            rep.setP(LastHit);
+            Position target = shootWithProbability();
+            boolean hit = plMap.Hit(target);
+            rep.setP(target);
             rep.setHit(hit);
             Ship sunkship;
             if (hit) {
                 hits++;
-                sunkship = plMap.Sunk(LastHit);
+                sunkship = plMap.Sunk(target);
                 if (sunkship != null) {
                     rep.setSunkShip(true);
                     RemoveBorders(sunkship);
                     hits = 0;
                     direction = null;
                 } else {
-                    FirstHit = LastHit;
+                    FirstHit = target;
                     possibility = new LinkedList<String>();
                     InitializeList();
                 }
@@ -102,6 +114,135 @@ public class Computer {
         return hit;
     }
 
+    private Position shootWithProbability() {
+        double[][] probabilityMap = calculateProbabilityMap();
+
+        // Track the maximum probability and the position with that probability
+        double maxProbability = -1;
+        Position bestPosition = null;
+
+        // Determine the size of the largest remaining ship
+        int largestShipSize = getLargestRemainingShipSize();
+
+        // Iterate over the probability map
+        for (int x = 0; x < Map.DIM_map; x++) {
+            for (int y = 0; y < Map.DIM_map; y++) {
+                // Check if the cell is empty and if its probability is greater than the maximum
+                if (plMap.getCellStatus(x, y) == '0' && probabilityMap[x][y] > maxProbability) {
+                    // If the largest remaining ship can fit horizontally or vertically, prioritize this cell
+                    if (canPlaceShip(x, y, largestShipSize, true) || canPlaceShip(x, y, largestShipSize, false)) {
+                        maxProbability = probabilityMap[x][y];
+                        bestPosition = new Position(x, y);
+                    }
+                }
+            }
+        }
+
+        // If no suitable position was found, shoot at the cell with the highest probability
+        if (bestPosition == null) {
+            for (int x = 0; x < Map.DIM_map; x++) {
+                for (int y = 0; y < Map.DIM_map; y++) {
+                    if (plMap.getCellStatus(x, y) == '0' && probabilityMap[x][y] > maxProbability) {
+                        maxProbability = probabilityMap[x][y];
+                        bestPosition = new Position(x, y);
+                    }
+                }
+            }
+        }
+
+        // Remove the selected position from the list of possible positions
+        if (bestPosition != null) {
+            ListofPosition.remove(bestPosition);
+        }
+
+        // Return the best position to shoot
+        LastHit = bestPosition;
+        return bestPosition;
+    }
+
+    // Method to get the size of the largest remaining ship
+    private int getLargestRemainingShipSize() {
+        int largestSize = 0;
+        for (EnemyShip enemyShip : EnemyShips) {
+            if (enemyShip.dimension > largestSize) {
+                largestSize = enemyShip.dimension;
+            }
+        }
+        return largestSize;
+    }
+
+
+    // Calculate the probability map for the entire grid
+    private double[][] calculateProbabilityMap() {
+        double[][] probabilityMap = new double[Map.DIM_map][Map.DIM_map];
+
+        // Calculate probabilities for each grid using public getter methods from plMap
+        calculateGridProbability(probabilityMap, plMap.getGrid1_x1(), plMap.getGrid1_y1(), plMap.getGrid1_x2(), plMap.getGrid1_y2());
+        calculateGridProbability(probabilityMap, plMap.getGrid2_x1(), plMap.getGrid2_y1(), plMap.getGrid2_x2(), plMap.getGrid2_y2());
+        calculateGridProbability(probabilityMap, plMap.getGrid3_x1(), plMap.getGrid3_y1(), plMap.getGrid3_x2(), plMap.getGrid3_y2());
+        calculateGridProbability(probabilityMap, plMap.getGrid4_x1(), plMap.getGrid4_y1(), plMap.getGrid4_x2(), plMap.getGrid4_y2());
+
+        return probabilityMap;
+    }
+
+
+
+    private void calculateGridProbability(double[][] probabilityMap, int x1, int y1, int x2, int y2) {
+        for (int x = x1; x < x2; x++) {
+            for (int y = y1; y < y2; y++) {
+                probabilityMap[x][y] = calculateCellProbability(x, y);
+            }
+        }
+    }
+
+    // Calculate the probability for a single cell
+    private double calculateCellProbability(int x, int y) {
+        if (plMap.getCellStatus(x, y) != '0') {
+            return 0.0; // Cell is not empty, so it cannot be a ship
+        }
+
+        double probability = 0.0;
+
+        for (EnemyShip enemyShip : EnemyShips) {
+            int shipSize = enemyShip.dimension;
+            // Check horizontal placement
+            if (canPlaceShip(x, y, shipSize, true)) {
+                probability += 1.0;
+            }
+            // Check vertical placement
+            if (canPlaceShip(x, y, shipSize, false)) {
+                probability += 1.0;
+            }
+        }
+
+        return probability;
+    }
+
+
+    // Check if a ship can be placed at the specified cell
+    private boolean canPlaceShip(int x, int y, int shipSize, boolean horizontal) {
+        if (horizontal) {
+            if (y + shipSize > Map.DIM_map) {
+                return false;
+            }
+            for (int i = 0; i < shipSize; i++) {
+                if (plMap.getCellStatus(x, y + i) != '0') {
+                    return false;
+                }
+            }
+        } else {
+            if (x + shipSize > Map.DIM_map) {
+                return false;
+            }
+            for (int i = 0; i < shipSize; i++) {
+                if (plMap.getCellStatus(x + i, y) != '0') {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private boolean shootTarget1() { // if the shoot is correct, shoot random dir of the possibility list
         boolean error = true;
         Position p = null;
@@ -140,7 +281,7 @@ public class Computer {
         LastHit = p;
         return plMap.Hit(p);
     }
-    
+
 
     private void RemoveBorders(Ship sunkship) {
         int Xstart = sunkship.getXstart();

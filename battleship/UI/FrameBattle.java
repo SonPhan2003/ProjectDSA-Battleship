@@ -52,9 +52,9 @@ public class FrameBattle implements ActionListener, KeyListener {
 
     public FrameBattle(LinkedList<int[]> playerShips, Map map) {
         playerMap = map;
-        cpu = new Computer(map);
         cpuMap = new Map();
         cpuMap.fillMapRandom();
+        cpu = new Computer(map,cpuMap.GetShipList());
         frame.setSize(1080, 700);
         frame.setTitle("Burning Battle");
         frame.setFocusable(true);
