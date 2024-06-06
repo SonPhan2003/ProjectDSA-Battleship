@@ -201,7 +201,7 @@ public class FrameBattle implements ActionListener, KeyListener {
             }
             direzione = possibilita.removeFirst();
             posAttuale.move(direzione.charAt(0));
-            if (playerMap.HIT(posAttuale)) {
+            if (playerMap.IsHitted(posAttuale)) {
                 trovato = true;
             }
         } while (!trovato);

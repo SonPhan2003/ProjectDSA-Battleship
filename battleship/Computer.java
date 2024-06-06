@@ -9,12 +9,14 @@ public class Computer {
     private LinkedList<Position> ListofPosition;
     private Random r;
     private int hits;
-    private LinkedList<String> possibility;
     private Position LastHit;
-    private String direction;
+    private String Direction;
     private Map plMap; //player Map
     private Position FirstHit;// First position
     private LinkedList<EnemyShip> EnemyShips = new LinkedList<EnemyShip>(); // the remain kind of ship
+    private LinkedList<String> PosibilityShoots = new LinkedList<String>();
+    private double[][] probabilityMap;
+
 
 
     public Computer(Map EnemyMap, LinkedList<Ship> Ships) {
@@ -39,73 +41,6 @@ public class Computer {
             EnemyShips.add(enemy);
         }
     }
-
-    public Report myTurn() {
-        Report rep = new Report();
-        if (hits == 0) {
-            Position target = shootWithProbability();
-            boolean hit = plMap.Hit(target);
-            rep.setP(target);
-            rep.setHit(hit);
-            Ship sunkship;
-            if (hit) {
-                hits++;
-                sunkship = plMap.Sunk(target);
-                if (sunkship != null) {
-                    rep.setSunkShip(true);
-                    RemoveBorders(sunkship);
-                    hits = 0;
-                    direction = null;
-                } else {
-                    FirstHit = target;
-                    possibility = new LinkedList<String>();
-                    InitializeList();
-                }
-            }
-            return rep;
-        } // Shoot random
-        if (hits == 1) {
-            boolean hit = shootTarget1();
-            Ship sunkship;
-            rep.setP(LastHit);
-            rep.setHit(hit);
-            rep.setSunkShip(false);
-            if (hit) {
-                hits++;
-                possibility = null;
-                sunkship = plMap.Sunk(LastHit);
-                if (sunkship != null) {
-                    rep.setSunkShip(true);
-                    RemoveBorders(sunkship);
-                    hits = 0;
-                    direction = null;
-                }
-            }
-            return rep;
-        }
-        if (hits >= 2) {
-            boolean hit = shootTarget2();
-            Ship sunkship;
-            rep.setP(LastHit);
-            rep.setHit(hit);
-            rep.setSunkShip(false);
-            if (hit) {
-                hits++;
-                sunkship = plMap.Sunk(LastHit);
-                if (sunkship != null) {
-                    rep.setSunkShip(true);
-                    RemoveBorders(sunkship);
-                    hits = 0;
-                    direction = null;
-                }
-            } else {
-                invertDirection();
-            }
-            return rep;
-        }
-        return null;
-    }
-
     private boolean ShootRandom() {
         int shoot = r.nextInt(ListofPosition.size());
         Position p = ListofPosition.remove(shoot);
@@ -114,54 +49,102 @@ public class Computer {
         return hit;
     }
 
-    private Position shootWithProbability() {
-        double[][] probabilityMap = calculateProbabilityMap();
+    private Position ShootWithProbability(int largestSize) {
+        CalculateProbabilityMap();
+        int largestShipSize = GetLargestRemainingShipSize();
+
 
         // Track the maximum probability and the position with that probability
         double maxProbability = -1;
         Position bestPosition = null;
 
-        // Determine the size of the largest remaining ship
-        int largestShipSize = getLargestRemainingShipSize();
-
-        // Iterate over the probability map
-        for (int x = 0; x < Map.DIM_map; x++) {
-            for (int y = 0; y < Map.DIM_map; y++) {
-                // Check if the cell is empty and if its probability is greater than the maximum
-                if (plMap.getCellStatus(x, y) == '0' && probabilityMap[x][y] > maxProbability) {
-                    // If the largest remaining ship can fit horizontally or vertically, prioritize this cell
-                    if (canPlaceShip(x, y, largestShipSize, true) || canPlaceShip(x, y, largestShipSize, false)) {
-                        maxProbability = probabilityMap[x][y];
-                        bestPosition = new Position(x, y);
-                    }
+        for (int i = 0; i < probabilityMap.length; i++) {
+            for (int j = 0; j < probabilityMap[i].length; j++) {
+                Position tempPosition = new Position(i,j);
+                if (probabilityMap[i][j] > maxProbability && !plMap.IsHitted(tempPosition) && !plMap.WATER(tempPosition)) {
+                    maxProbability = probabilityMap[i][j];
+                    bestPosition = new Position(i, j);
                 }
             }
         }
 
-        // If no suitable position was found, shoot at the cell with the highest probability
-        if (bestPosition == null) {
-            for (int x = 0; x < Map.DIM_map; x++) {
-                for (int y = 0; y < Map.DIM_map; y++) {
-                    if (plMap.getCellStatus(x, y) == '0' && probabilityMap[x][y] > maxProbability) {
-                        maxProbability = probabilityMap[x][y];
-                        bestPosition = new Position(x, y);
-                    }
-                }
-            }
-        }
-
-        // Remove the selected position from the list of possible positions
-        if (bestPosition != null) {
-            ListofPosition.remove(bestPosition);
-        }
-
-        // Return the best position to shoot
+        // Remove the selected position from the list of available positions
+        ListofPosition.remove(bestPosition);
         LastHit = bestPosition;
         return bestPosition;
     }
 
+    private void CalculateProbabilityMap() {
+        int mapDIM = Map.DIM_map;
+        probabilityMap = new double[mapDIM][mapDIM];
+        int largestSize = GetLargestRemainingShipSize();
+
+        for (int i = 0; i < mapDIM; i++) {
+            for (int j = 0; j < mapDIM; j++) {
+                probabilityMap[i][j] = WayShipCreated(i + 1, j + 1, largestSize);
+            }
+        }
+    }
+
+
+    private int WayShipCreated(int x, int y, int largestSize) {
+        int ways = 0;
+        int mapDIM = Map.DIM_map;
+
+        if (largestSize == 4) {
+            if (x <= 4) {
+                ways += x;
+            } else if (x <= 7) {
+                ways += 4;
+            } else {
+                ways += 10 - x + 1;
+            }
+
+            if (y <= 4) {
+                ways += y;
+            } else if (y <= 7) {
+                ways += 4;
+            } else {
+                ways += 10 - y + 1;
+            }
+        } else if (largestSize == 3) {
+            if (x <= 2) {
+                ways += x;
+            } else if (x <= 8) {
+                ways += 3;
+            } else {
+                ways += 11 - x;
+            }
+
+            if (y <= 2) {
+                ways += y;
+            } else if (y <= 8) {
+                ways += 3;
+            } else {
+                ways += 11 - y;
+            }
+        } else if (largestSize == 2) {
+            if (x < 2 || x == 10) {
+                ways += 1;
+            } else {
+                ways += 2;
+            }
+
+            if (y < 2 || y == 10) {
+                ways += 1;
+            } else {
+                ways += 2;
+            }
+        } else { // size = 1
+            ways = 1;
+        }
+
+        return ways;
+    }
+
+
     // Method to get the size of the largest remaining ship
-    private int getLargestRemainingShipSize() {
+    private int GetLargestRemainingShipSize() {
         int largestSize = 0;
         for (EnemyShip enemyShip : EnemyShips) {
             if (enemyShip.dimension > largestSize) {
@@ -171,87 +154,104 @@ public class Computer {
         return largestSize;
     }
 
+    private int DefineDirection()
+        {
+            int Direction = r.nextInt(PosibilityShoots.size());
+            return Direction;
+        }
 
-    // Calculate the probability map for the entire grid
-    private double[][] calculateProbabilityMap() {
-        double[][] probabilityMap = new double[Map.DIM_map][Map.DIM_map];
+    private void ShootPosibility()
+    {
 
-        // Calculate probabilities for each grid using public getter methods from plMap
-        calculateGridProbability(probabilityMap, plMap.getGrid1_x1(), plMap.getGrid1_y1(), plMap.getGrid1_x2(), plMap.getGrid1_y2());
-        calculateGridProbability(probabilityMap, plMap.getGrid2_x1(), plMap.getGrid2_y1(), plMap.getGrid2_x2(), plMap.getGrid2_y2());
-        calculateGridProbability(probabilityMap, plMap.getGrid3_x1(), plMap.getGrid3_y1(), plMap.getGrid3_x2(), plMap.getGrid3_y2());
-        calculateGridProbability(probabilityMap, plMap.getGrid4_x1(), plMap.getGrid4_y1(), plMap.getGrid4_x2(), plMap.getGrid4_y2());
-
-        return probabilityMap;
-    }
-
-
-
-    private void calculateGridProbability(double[][] probabilityMap, int x1, int y1, int x2, int y2) {
-        for (int x = x1; x < x2; x++) {
-            for (int y = y1; y < y2; y++) {
-                probabilityMap[x][y] = calculateCellProbability(x, y);
-            }
+        if (FirstHit.getCoordX() != 0) {
+            PosibilityShoots.add("N");
+        }
+        if (FirstHit.getCoordX() != Map.DIM_map - 1) {
+            PosibilityShoots.add("S");
+        }
+        if (FirstHit.getCoordY() != 0) {
+            PosibilityShoots.add("O");
+        }
+        if (FirstHit.getCoordY() != Map.DIM_map - 1) {
+            PosibilityShoots.add("E");
         }
     }
 
-    // Calculate the probability for a single cell
-    private double calculateCellProbability(int x, int y) {
-        if (plMap.getCellStatus(x, y) != '0') {
-            return 0.0; // Cell is not empty, so it cannot be a ship
+    private Position GetShootPosition()
+    {
+        if (hits == 0)
+        {
+            //Bắn dò
+            int largestSize = GetLargestRemainingShipSize();
+            Position shootPosition = ShootWithProbability(largestSize);
+            //Position shootPosition = new Position(1,1);
+            return shootPosition;
         }
-
-        double probability = 0.0;
-
-        for (EnemyShip enemyShip : EnemyShips) {
-            int shipSize = enemyShip.dimension;
-            // Check horizontal placement
-            if (canPlaceShip(x, y, shipSize, true)) {
-                probability += 1.0;
-            }
-            // Check vertical placement
-            if (canPlaceShip(x, y, shipSize, false)) {
-                probability += 1.0;
-            }
+        if(hits == 1){
+            return ShootTarget1();
         }
+        return ShootTarget2();
 
-        return probability;
     }
 
 
-    // Check if a ship can be placed at the specified cell
-    private boolean canPlaceShip(int x, int y, int shipSize, boolean horizontal) {
-        if (horizontal) {
-            if (y + shipSize > Map.DIM_map) {
-                return false;
+    public Report myTurn() {
+        //Vị trí muốn bắn
+        Position shootPosition = GetShootPosition();
+
+        //Check bắn trúng hay ko?
+        boolean isHit = plMap.Hit(shootPosition);
+
+        //Check tàu đã chìm hay ko?
+        boolean isSunk = false;
+
+        Ship sunkship;
+
+        if (isHit) // nếu đúng
+        {
+            hits++;
+
+            if (hits == 1) //Check có phải phát bắn dính đầu tiên
+            {
+                FirstHit = shootPosition;
+                ShootPosibility();
             }
-            for (int i = 0; i < shipSize; i++) {
-                if (plMap.getCellStatus(x, y + i) != '0') {
-                    return false;
-                }
+
+            else if(hits > 1)
+            {
+                // Xét Logic giữa: FirstHit, shootPosition
+                // Gán data cho Direction
+                DefineDirection();
             }
-        } else {
-            if (x + shipSize > Map.DIM_map) {
-                return false;
-            }
-            for (int i = 0; i < shipSize; i++) {
-                if (plMap.getCellStatus(x + i, y) != '0') {
-                    return false;
-                }
+
+            sunkship = plMap.Sunk(shootPosition);
+            if (sunkship != null)
+            {
+                isSunk = true;
+                //rep.setSunkShip(true);
+                RemoveBorders(sunkship);
+                hits = 0;
+
+                Direction = null; // Direction = 0;
+                FirstHit = null;
             }
         }
-        return true;
+
+        Report rep = new Report(shootPosition, isHit, isSunk);
+
+        return rep;
     }
 
-    private boolean shootTarget1() { // if the shoot is correct, shoot random dir of the possibility list
+
+    private Position ShootTarget1() { // if the shoot is correct, shoot random dir of the possibility list
         boolean error = true;
         Position p = null;
         do {
-            int shoot = r.nextInt(possibility.size());
-            String dir = possibility.remove(shoot); //direction
+            int shoot = r.nextInt(PosibilityShoots.size());
+            String dir = PosibilityShoots.remove(shoot); //direction
             p = new Position(FirstHit);
             p.move(dir.charAt(0));
-            direction = dir;
+            Direction = dir;
             if (!plMap.WATER(p)) {
                 ListofPosition.remove(p);
                 error = false;
@@ -259,19 +259,19 @@ public class Computer {
         } while (error);// make sure to not hit
 
         LastHit = p;
-        return plMap.Hit(p);
+        return p;
     }
 
-    private boolean shootTarget2() {
+    private Position ShootTarget2() {
         boolean hit = false;
         Position p = new Position(LastHit);
         do {
-            p.move(direction.charAt(0));
+            p.move(Direction.charAt(0));
 
             if (p.outMap() || plMap.WATER(p)) {
                 invertDirection();
             } else {
-                if (!plMap.HIT(p)) {
+                if (!plMap.IsHitted(p)) {
                     hit = true;
                 }
 
@@ -279,7 +279,7 @@ public class Computer {
         } while (!hit);
         ListofPosition.remove(p);
         LastHit = p;
-        return plMap.Hit(p);
+        return p;
     }
 
 
@@ -360,30 +360,16 @@ public class Computer {
         }
     }
 
-    private void InitializeList() {
-        if (LastHit.getCoordX() != 0) {
-            possibility.add("N");
-        }
-        if (LastHit.getCoordX() != Map.DIM_map - 1) {
-            possibility.add("S");
-        }
-        if (LastHit.getCoordY() != 0) {
-            possibility.add("O");
-        }
-        if (LastHit.getCoordY() != Map.DIM_map - 1) {
-            possibility.add("E");
-        }
-    }
 
     private void invertDirection() {
-        if (direction.equals("N")) {
-            direction = "S";
-        } else if (direction.equals("S")) {
-            direction = "N";
-        } else if (direction.equals("E")) {
-            direction = "O";
-        } else if (direction.equals("O")) {
-            direction = "E";
+        if (Direction.equals("N")) {
+            Direction = "S";
+        } else if (Direction.equals("S")) {
+            Direction = "N";
+        } else if (Direction.equals("E")) {
+            Direction = "O";
+        } else if (Direction.equals("O")) {
+            Direction = "E";
         }
     }
 

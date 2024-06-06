@@ -287,7 +287,11 @@ public class Map {
         return map[p.getCoordX()][p.getCoordY()] == WATER;
     }
 
-    public boolean HIT(Position p) {
+    public boolean IsEmpty(Position p){
+        return map[p.getCoordX()][p.getCoordY()] == EMPTY;
+    }
+
+    public boolean IsHitted(Position p) {
         return map[p.getCoordX()][p.getCoordY()] == HIT;
     }
 
