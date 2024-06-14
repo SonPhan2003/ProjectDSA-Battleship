@@ -1,3 +1,7 @@
+/* Name: Phan Manh Son
+ ID: ITDSIU21116
+ Purpose: Battle ship game which play by human vs computer
+*/
 package battleship;
 
 public class Report {
