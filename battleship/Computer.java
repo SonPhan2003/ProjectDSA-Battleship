@@ -47,12 +47,10 @@ public class Computer {
         }
     }
 
-    private boolean ShootRandom() {
+    private Position ShootRandom() {
         int shoot = r.nextInt(ListofPosition.size());
         Position p = ListofPosition.remove(shoot);
-        LastHit = p;
-        boolean hit = plMap.Hit(p);
-        return hit;
+        return p;
     }
 
     private Position ShootWithProbability(int largestSize) {
@@ -238,8 +236,7 @@ public class Computer {
         // If the largest remaining ship size is 1, use the shootRandom method
         if (largestSize == 1) {
             // Call the shootRandom method and return the position
-            boolean hit = ShootRandom();
-            return LastHit; // LastHit is set in the ShootRandom method
+            return ShootRandom(); // LastHit is set in the ShootRandom method
         }
 
         if (hits == 0) {
@@ -263,11 +260,9 @@ public class Computer {
         return null;
     }
 
-
     public Report myTurn() {
         //Vị trí muốn bắn
         Position shootPosition = GetShootPosition();
-        shootPosition = new Position(7,9);
 
         //Check bắn trúng hay ko?
         boolean isHit = plMap.Hit(shootPosition);
@@ -279,21 +274,6 @@ public class Computer {
 
         if (isHit) // nếu đúng
         {
-            hits++;
-
-            if (hits == 1) //Check có phải phát bắn dính đầu tiên
-            {
-                FirstHit = shootPosition;
-                ShootPosibility();
-            }
-
-            else if(hits > 1)
-            {
-                // Xét Logic giữa: FirstHit, shootPosition
-                // Gán data cho Direction
-                DefineDirection();
-            }
-
             sunkship = plMap.Sunk(shootPosition);
             if (sunkship != null)
             {
@@ -307,6 +287,19 @@ public class Computer {
                 // Remove the sunk ship from the list of enemy ships
                 removeSunkShip(sunkship.getDimension());
 
+            }else {
+
+                hits++;
+
+                if (hits == 1) //Check có phải phát bắn dính đầu tiên
+                {
+                    FirstHit = shootPosition;
+                    ShootPosibility();
+                } else if (hits > 1) {
+                    // Xét Logic giữa: FirstHit, shootPosition
+                    // Gán data cho Direction
+                    DefineDirection();
+                }
             }
         }
         CalculateProbabilityMap();
