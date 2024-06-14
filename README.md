@@ -1,4 +1,4 @@
-# Battleship DSA
+# Battleship Data Structured and Algorithm project
 Battleship game for data structured and algorithm subject
 
 Game UI
