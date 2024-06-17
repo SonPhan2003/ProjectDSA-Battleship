@@ -22,37 +22,6 @@ public class Map {
                 map[i][j] = EMPTY;
     }
 
-
-    public void markBlockedCellsAroundSunkShip(Ship ship) {
-        int startX = ship.getXstart();
-        int startY = ship.getYstart();
-        int endX = ship.getXEnd();
-        int endY = ship.getYEnd();
-
-        // Mark cells around the ship as WATER
-        for (int i = startX - 1; i <= endX + 1; i++) {
-            for (int j = startY - 1; j <= endY + 1; j++) {
-                if (i >= 0 && i < DIM_map && j >= 0 && j < DIM_map) {
-                    if (map[i][j] != HIT) {  // Skip cells that are already hit
-                        map[i][j] = WATER;
-                    }
-                }
-            }
-        }
-    }
-
-    private boolean[][] getBlockedCells() {
-        boolean[][] blockedCells = new boolean[Map.DIM_map][Map.DIM_map];
-
-        for (Ship ship : ShipList) {
-            if (ship.isSunk(this)) { // Pass the Map object (this) to isSunk method
-                markBlockedCellsAroundSunkShip(ship);
-            }
-        }
-
-        return blockedCells;
-    }
-
     public char getCellStatus(int x, int y) {
         return map[x][y];
     }

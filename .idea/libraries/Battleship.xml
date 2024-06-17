@@ -1,12 +1,12 @@
 <component name="libraryTable">
   <library name="Battleship">
     <CLASSES>
-      <root url="file://$USER_HOME$/Downloads/javafx-sdk-22.0.1/lib" />
+      <root url="file://$USER_HOME$/Downloads/openjfx-22_windows-x64_bin-sdk/javafx-sdk-22/lib" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
       <root url="file://$PROJECT_DIR$" />
     </SOURCES>
-    <jarDirectory url="file://$USER_HOME$/Downloads/javafx-sdk-22.0.1/lib" recursive="false" />
+    <jarDirectory url="file://$USER_HOME$/Downloads/openjfx-22_windows-x64_bin-sdk/javafx-sdk-22/lib" recursive="false" />
   </library>
 </component>
