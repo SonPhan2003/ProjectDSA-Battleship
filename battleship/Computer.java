@@ -88,12 +88,14 @@ public class Computer {
                 if (!plMap.IsHitted(new Position(i, j)) && !plMap.WATER(new Position(i, j))) {
                     probabilityMap[i][j] = calculatePositionProbability(i, j, largestSize);
                 } else {
-                    probabilityMap[i][j] = 0;
+                    probabilityMap[i][j] = 0; // for the missed, mark the probability as 0
                 }
             }
         }
     }
 
+    // calculate the probability for each cell of the map based on the ship size
+    // (return number of ways a ship size can be placed)
     private double calculatePositionProbability(int x, int y, int shipSize) {
         int ways = 0;
 
@@ -125,60 +127,60 @@ public class Computer {
     }
 
 
-    private int WayShipCreated(int x, int y, int largestSize) {
-        int ways = 0;
-        int mapDIM = Map.DIM_map;
-
-        if (largestSize == 4) {
-            if (x <= 4) {
-                ways += x;
-            } else if (x <= 7) {
-                ways += 4;
-            } else {
-                ways += 10 - x + 1;
-            }
-
-            if (y <= 4) {
-                ways += y;
-            } else if (y <= 7) {
-                ways += 4;
-            } else {
-                ways += 10 - y + 1;
-            }
-        } else if (largestSize == 3) {
-            if (x <= 2) {
-                ways += x;
-            } else if (x <= 8) {
-                ways += 3;
-            } else {
-                ways += 11 - x;
-            }
-
-            if (y <= 2) {
-                ways += y;
-            } else if (y <= 8) {
-                ways += 3;
-            } else {
-                ways += 11 - y;
-            }
-        } else if (largestSize == 2) {
-            if (x < 2 || x == 10) {
-                ways += 1;
-            } else {
-                ways += 2;
-            }
-
-            if (y < 2 || y == 10) {
-                ways += 1;
-            } else {
-                ways += 2;
-            }
-        } else { // size = 1
-            ways = 1;
-        }
-
-        return ways;
-    }
+//    private int WayShipCreated(int x, int y, int largestSize) {
+//        int ways = 0;
+//        int mapDIM = Map.DIM_map;
+//
+//        if (largestSize == 4) {
+//            if (x <= 4) {
+//                ways += x;
+//            } else if (x <= 7) {
+//                ways += 4;
+//            } else {
+//                ways += 10 - x + 1;
+//            }
+//
+//            if (y <= 4) {
+//                ways += y;
+//            } else if (y <= 7) {
+//                ways += 4;
+//            } else {
+//                ways += 10 - y + 1;
+//            }
+//        } else if (largestSize == 3) {
+//            if (x <= 2) {
+//                ways += x;
+//            } else if (x <= 8) {
+//                ways += 3;
+//            } else {
+//                ways += 11 - x;
+//            }
+//
+//            if (y <= 2) {
+//                ways += y;
+//            } else if (y <= 8) {
+//                ways += 3;
+//            } else {
+//                ways += 11 - y;
+//            }
+//        } else if (largestSize == 2) {
+//            if (x < 2 || x == 10) {
+//                ways += 1;
+//            } else {
+//                ways += 2;
+//            }
+//
+//            if (y < 2 || y == 10) {
+//                ways += 1;
+//            } else {
+//                ways += 2;
+//            }
+//        } else { // size = 1
+//            ways = 1;
+//        }
+//
+//        return ways;
+//    }
 
 
     // Method to get the size of the largest remaining ship
@@ -192,6 +194,7 @@ public class Computer {
         return largestSize;
     }
 
+    //remove sunk ships from the list
     private void removeSunkShip(int dimension) {
         for (int i = 0; i < EnemyShips.size(); i++) {
             if (EnemyShips.get(i).dimension == dimension) {
@@ -201,6 +204,7 @@ public class Computer {
         }
     }
 
+    // to check the direction where to shoot
     private int DefineDirection()
         {
             if (PosibilityShoots.isEmpty()) {
@@ -211,7 +215,7 @@ public class Computer {
             return Direction;
         }
 
-    private void ShootPosibility()
+    private void ShootPosibility() // create a list of possible direction
     {
         PosibilityShoots = new LinkedList<String>();
 
@@ -229,7 +233,7 @@ public class Computer {
         }
     }
 
-    private Position GetShootPosition() {
+    private Position GetShootPosition() { // get the position to shoot
         // Get the size of the largest remaining ship
         int largestSize = GetLargestRemainingShipSize();
 
@@ -239,7 +243,7 @@ public class Computer {
             return ShootRandom(); // LastHit is set in the ShootRandom method
         }
 
-        if (hits == 0) {
+        if (hits == 0) { // when there is no hit yet, use probability methods
             //Bắn dò
             Position shootPosition = ShootWithProbability(largestSize);
             return shootPosition;
@@ -250,7 +254,7 @@ public class Computer {
         }
 
         if(hits >= 2){
-            if (plMap.WATER(LastHit) || LastHit.outMap()){
+            if (plMap.WATER(LastHit) || LastHit.outMap()){ //if shoot to water or the hit is out of map, invert the direction
                 invertDirection();
             }
             Position LastHit = ShootTarget2();
@@ -261,21 +265,21 @@ public class Computer {
     }
 
     public Report myTurn() {
-        //Vị trí muốn bắn
+        //Position to shoot
         Position shootPosition = GetShootPosition();
 
-        //Check bắn trúng hay ko?
+        //Check if the shoot is a hit or missed
         boolean isHit = plMap.Hit(shootPosition);
 
-        //Check tàu đã chìm hay ko?
+        //Check if the ship is sunk or not
         boolean isSunk = false;
 
         Ship sunkship;
 
-        if (isHit) // nếu đúng
+        if (isHit) // if true
         {
-            sunkship = plMap.Sunk(shootPosition);
-            if (sunkship != null)
+            sunkship = plMap.Sunk(shootPosition); // check sunkship from the shoot
+            if (sunkship != null) // if ship is already sunk because it is not null
             {
                 isSunk = true;
                 //rep.setSunkShip(true);
@@ -287,23 +291,22 @@ public class Computer {
                 // Remove the sunk ship from the list of enemy ships
                 removeSunkShip(sunkship.getDimension());
 
-            }else {
+            }else {  //if the ship is not sunk yet
 
-                hits++;
+                hits++; // increase the hit to continue the shoot
 
-                if (hits == 1) //Check có phải phát bắn dính đầu tiên
+                if (hits == 1) //check if the first hit is correct
                 {
                     FirstHit = shootPosition;
                     ShootPosibility();
-                } else if (hits > 1) {
-                    // Xét Logic giữa: FirstHit, shootPosition
-                    // Gán data cho Direction
+                } else if (hits > 1) { // if the hit is more than 1
+                    // check the direction to prepare for shoot Target 1
                     DefineDirection();
                 }
             }
         }
         CalculateProbabilityMap();
-        Report rep = new Report(shootPosition, isHit, isSunk);
+        Report rep = new Report(shootPosition, isHit, isSunk); // this will report back the position, hit or not, and sunk or not
 
         return rep;
     }
@@ -312,13 +315,13 @@ public class Computer {
     private Position ShootTarget1() { // if the shoot is correct, shoot random dir of the possibility list
         boolean error = true;
         Position p = null;
-        do {
-            int shoot = r.nextInt(PosibilityShoots.size());
+        do { // loop till the valid position is found
+            int shoot = r.nextInt(PosibilityShoots.size()); // take random direction from the list
             String dir = PosibilityShoots.remove(shoot); //direction
             p = new Position(FirstHit);
-            p.move(dir.charAt(0));
+            p.move(dir.charAt(0)); // move 1 position from dir
             Direction = dir;
-            if (!plMap.WATER(p)) {
+            if (!plMap.WATER(p)) { // check if hit ship because not hit is water
                 ListofPosition.remove(p);
                 error = false;
             }
@@ -331,19 +334,19 @@ public class Computer {
     private Position ShootTarget2() {
         boolean hit = false;
         Position p = new Position(LastHit);
-        do {
-            p.move(Direction.charAt(0));
+        do { // loop when the hit is false, so it will shoot the same direction till the ship is sunk
+            p.move(Direction.charAt(0)); // move forward 1 cell same direction
 
-            if (p.outMap() || plMap.WATER(p)) {
+            if (p.outMap() || plMap.WATER(p)) { // if out map or water then go the opposite direction
                 invertDirection();
             } else {
-                if (!plMap.IsHitted(p)) {
-                    hit = true;
+                if (!plMap.IsHitted(p)) { // hit correct
+                    hit = true; // it true, go out of the loop
                 }
 
             }
         } while (!hit);
-        ListofPosition.remove(p);
+        ListofPosition.remove(p); // remove the position just shoot out of the list
         LastHit = p;
         return p;
     }
@@ -427,7 +430,7 @@ public class Computer {
     }
 
 
-    private void invertDirection() {
+    private void invertDirection() { // opposite direction
         if (Direction.equals("N")) {
             Direction = "S";
         } else if (Direction.equals("S")) {
