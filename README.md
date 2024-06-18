@@ -14,4 +14,3 @@ Installation
 + install JavaFx from https://gluonhq.com/products/javafx/
   (if you do not have)
 
-+ 
