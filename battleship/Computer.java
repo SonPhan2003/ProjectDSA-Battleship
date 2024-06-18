@@ -86,9 +86,11 @@ public class Computer {
         for (int i = 0; i < mapDIM; i++) {
             for (int j = 0; j < mapDIM; j++) {
                 if (!plMap.IsHitted(new Position(i, j)) && !plMap.WATER(new Position(i, j))) {
+                    // if not hit yet or not a water cell
                     probabilityMap[i][j] = calculatePositionProbability(i, j, largestSize);
                 } else {
-                    probabilityMap[i][j] = 0; // for the missed, mark the probability as 0
+                    // if a hit or a water. Mark this cell can't place ship here
+                    probabilityMap[i][j] = 0;
                 }
             }
         }
@@ -101,10 +103,13 @@ public class Computer {
 
         // Horizontal placement
         for (int i = Math.max(0, x - shipSize + 1); i <= x && i + shipSize <= Map.DIM_map; i++) {
+            // Math.max(0, x - shipSize + 1): ensure i not go out of left side bound map
+            // i <= x && i + shipSize <= Map.DIM_map: ship can't go out of the right bound
             boolean canPlace = true;
             for (int j = i; j < i + shipSize; j++) {
                 if (plMap.IsHitted(new Position(j, y)) || plMap.WATER(new Position(j, y))) {
-                    canPlace = false;
+                    // check whether a hit or a water
+                    canPlace = false; // not overlap to this position again
                     break;
                 }
             }
@@ -113,6 +118,8 @@ public class Computer {
 
         // Vertical placement
         for (int i = Math.max(0, y - shipSize + 1); i <= y && i + shipSize <= Map.DIM_map; i++) {
+            // Math.max(0, y - shipSize + 1): ensure i won't go out of top side bound map
+            // i <= y && i + shipSize <= Map.DIM_map: ensure ship won't go beyond the bottom bound map
             boolean canPlace = true;
             for (int j = i; j < i + shipSize; j++) {
                 if (plMap.IsHitted(new Position(x, j)) || plMap.WATER(new Position(x, j))) {
