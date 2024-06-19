@@ -12,5 +12,5 @@ Installation
 + git clone https://github.com/SonPhan2003/ProjectDSA-Battleship
 
 + install JavaFx from https://gluonhq.com/products/javafx/
-  (if you do not have)
+  (if you do not have) and use lib folder to run
 
